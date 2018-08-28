@@ -42,6 +42,17 @@ class Node_radix{
     int get_children(){return number_childrens;}
     //bool is_leaf(){return is_leaf;}
     bool is_leaf;
+    int search_for_indx(std::string s, int & indx){
+        int sim;
+        for(int i = 0; i < this->get_children(); i++){
+            sim = get_maximum_similariy(s, this->childrens[i]->get_value());
+            if(sim > 0){
+                indx = i;
+                return sim;
+            }
+        }
+        return 0;
+    }
 };
 
 class Radix_tree{
@@ -49,29 +60,36 @@ class Radix_tree{
     Node_radix * root;
    
     void insert(const std::string & s, Node_radix * node){
-        if(this->root ==nullptr){
-            root = new Node_radix(false);
-            root->push_child(s);
-            return;
-        }
-        if(!node->is_leaf){
+        if(s != ""){
+            if(this->root ==nullptr){
+                root = new Node_radix(false);
+                root->push_child(s);
+                return;
+            }
+        
             bool wasInsert = false;
-            for(int i = 0; i < node->get_children(); i++){
-                int sim = get_maximum_similariy(s, node->childrens[i]->get_value());
-                if(sim > 0){
-                    Node_radix * newInterNode = new Node_radix(false, node->childrens[i]->get_value().substr(0,sim),node->father);
-                    newInterNode->push_child(node->childrens[i]);
+            int index;
+            int sim = node->search_for_indx(s, index);
+            if(sim > 0){
+                if(sim == node->childrens[index]->get_value().size())
+                    insert(s.substr(sim,s.size()-1),node->childrens[index]);
+                else{
+                    Node_radix * newInterNode = new Node_radix(false, node->childrens[index]->get_value().substr(0,sim),node);
+                    newInterNode->push_child(node->childrens[index]);
                     
-                    node->childrens[i]->set_value(node->childrens[i]->get_value().substr(sim,node->childrens[i]->get_value().size()-1));
-                    node->childrens[i] = newInterNode;
+                    node->childrens[index]->set_value(node->childrens[index]->get_value().substr(sim,node->get_value().size()-1));
+                    node->childrens[index]->father = newInterNode;
+                    node->childrens[index] = newInterNode;
+
                     insert(s.substr(sim, s.size()), newInterNode);
-                    wasInsert = true;
-                    break;
                 }
             }
-            if(!wasInsert){
-                node->push_child(s);                
+            else{
+                node->push_child(s);   
             }
+            /*if(!wasInsert){
+                node->push_child(s);                
+            }*/
         }
     }
     public:
