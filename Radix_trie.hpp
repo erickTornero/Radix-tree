@@ -33,6 +33,10 @@ class Node_radix{
         childrens.push_back(new Node_radix(true, s, this));
         number_childrens++;
     }
+    void push_child(Node_radix * node){
+        childrens.push_back(node);
+        number_childrens++;
+    }
     std::string get_value(){return value;}
     void set_value(std::string s){value = s; }
     int get_children(){return number_childrens;}
@@ -55,13 +59,18 @@ class Radix_tree{
             for(int i = 0; i < node->get_children(); i++){
                 int sim = get_maximum_similariy(s, node->childrens[i]->get_value());
                 if(sim > 0){
-                    Node_radix * newInterNode = new Node_radix(false, node->childrens[i]->get_value().substr(0,sim-1),node->father);
-                    node->childrens[i]->set_value(node->childrens[i]->get_value().substr(0,sim-1));
+                    Node_radix * newInterNode = new Node_radix(false, node->childrens[i]->get_value().substr(0,sim),node->father);
+                    newInterNode->push_child(node->childrens[i]);
+                    
+                    node->childrens[i]->set_value(node->childrens[i]->get_value().substr(sim,node->childrens[i]->get_value().size()-1));
+                    node->childrens[i] = newInterNode;
+                    insert(s.substr(sim, s.size()), newInterNode);
+                    wasInsert = true;
+                    break;
                 }
             }
             if(!wasInsert){
-                node->push_child(s);
-                
+                node->push_child(s);                
             }
         }
     }
