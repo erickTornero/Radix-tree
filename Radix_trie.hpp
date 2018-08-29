@@ -53,7 +53,7 @@ class Node_radix{
     void set_value(std::string s){value = s; }
     int get_number_children(){return number_childrens;}
     int get_number_documents(){return number_documents;}
-
+    std::vector<doc_type> * get_doc_ptr(){return &this->documents; }
     int search_for_indx(std::string s, int & indx){
         int sim;
         for(int i = 0; i < this->get_number_children(); i++){
@@ -83,8 +83,12 @@ class Radix_tree{
             int index;
             int sim = node->search_for_indx(s, index);
             if(sim > 0){
-                if(sim == node->childrens[index]->get_value().size())
-                    insert(s.substr(sim,s.size()-1),node->childrens[index], doc);
+                if(sim == node->childrens[index]->get_value().size()){
+                    if(sim == s.size())
+                        node->childrens[index]->push_document(doc);
+                    else
+                        insert(s.substr(sim,s.size()-1),node->childrens[index], doc);
+                }
                 else{
                     Node_radix * newInterNode = new Node_radix(false, node->childrens[index]->get_value().substr(0,sim),node);
                     newInterNode->push_child(node->childrens[index], doc);
@@ -105,9 +109,25 @@ class Radix_tree{
             }
         }
     }
+    void search__(const std::string & s, std::vector<std::vector<doc_type> *> & ans, Node_radix * node){
+        int sim = 0;
+        for(int i = 0; i < node->get_number_children(); i++){
+            sim = get_maximum_similariy(s, node->childrens[i]->get_value());
+            if(sim > 0){
+                if(sim == s.size())
+                    ans.push_back(node->childrens[i]->get_doc_ptr());
+                else{
+                    search__(s.substr(sim, s.size()), ans, node->childrens[i]);
+                }
+            }
+        }
+    }
     public:
     void insert(const std::string & s, doc_type doc){
         insert(s, this->root, doc);
+    }
+    void search(const std::string & s, std::vector<std::vector<doc_type> *> & ans){
+        search__(s, ans, this->root);
     }
 };
 
