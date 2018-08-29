@@ -26,6 +26,9 @@ int main(){
     tree->search("dogo",ans);
     print_answer(ans);
     parser p("/home/erick/Documentos/DATA_SEARCH_ENGINE/raw.es/spanishText_20000_25000");
-    p.get_nex_Document(1);
+    int count;
+    std::vector<retrieval_data> docs;
+    p.get_documents(docs);
+    std::cout<<docs.size()<<" #Docs..."<<std::endl;
     int xx = 21;
 }
